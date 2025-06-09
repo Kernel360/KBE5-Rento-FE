@@ -15,7 +15,7 @@ const ManagerLoginForm: React.FC = () => {
     setError('');
     
     try {
-      const res = await fetch('/api/managers/login', {
+      const res = await fetch('http://api.rento.world/api/managers/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
