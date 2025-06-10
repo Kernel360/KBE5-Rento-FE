@@ -8,6 +8,7 @@ import Layout from './components/Layout';
 import DashboardPage from './components/pages/DashBoardPage';
 import UserManagementPage from './components/pages/UserManagementPage';
 import { CompanyProvider } from './contexts/CompanyContext';
+import VehicleFleetPage from './components/pages/VehicleFleetPage';
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
               </Layout>
             }
           />
+          <Route path="/vehicles" element={<VehicleFleetPage />} />
           {/* 다른 인증 이후 페이지들도 동일하게 Layout 감싸기! */}
         </Routes>
       </Router>
@@ -45,3 +47,4 @@ function App() {
 }
 
 export default App;
+ 
