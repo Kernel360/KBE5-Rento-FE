@@ -13,6 +13,7 @@ const ManagerLoginForm: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    
     try {
       const res = await fetch('/api/managers/login', {
         method: 'POST',
@@ -28,7 +29,6 @@ const ManagerLoginForm: React.FC = () => {
         const data = await res.json();
         console.log('Login response data:', data);
 
-        // 토큰 추출 (대소문자 구분 없이)
         const accessToken = res.headers.get('accesstoken') || 
                           res.headers.get('AccessToken') || 
                           res.headers.get('ACCESSTOKEN');
