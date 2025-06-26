@@ -4,6 +4,7 @@ import { Department, DepartmentRegisterRequest, DepartmentUpdateRequest, getDepa
 import { handleApiError } from '../../utils/errorHandler';
 import { useCompany } from '../../contexts/CompanyContext';
 import axiosInstance from '../../utils/axios';
+import VehiclePagination from '../vehicle/VehiclePagination';
 
 const UserManagementPage: React.FC = () => {
   const { companyCode: contextCompanyCode } = useCompany();
@@ -51,48 +52,52 @@ const UserManagementPage: React.FC = () => {
   const [userPositionFilter, setUserPositionFilter] = useState<string>('전체');
   // Add search state
   const [userSearch, setUserSearch] = useState<string>('');
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [totalElements, setTotalElements] = useState(0);
 
   // 초기 데이터 로드
   useEffect(() => {
     const loadInitialData = async () => {
       try {
         const storedCompanyCode = localStorage.getItem('companyCode');
-        console.log('Stored company code:', storedCompanyCode);
-        
         if (!storedCompanyCode) {
           setError('회사 코드가 없습니다. 다시 로그인해주세요.');
           return;
         }
-
-        const [usersResponse, departmentsResponse, positionsResponse] = await Promise.all([
-          getMembers(storedCompanyCode as string),
+        // 사용자 목록은 여기서 불러오지 않음!
+        const [departmentsResponse, positionsResponse] = await Promise.all([
           getDepartments(storedCompanyCode as string),
           getPositions()
         ]);
-
-        console.log('API Responses:', {
-          users: usersResponse,
-          departments: departmentsResponse,
-          positions: positionsResponse
-        });
-
-        setUsers(Array.isArray(usersResponse.data) ? usersResponse.data : []);
         setDepartments(Array.isArray(departmentsResponse.data) ? departmentsResponse.data : []);
         setPositions(Array.isArray(positionsResponse.data) ? positionsResponse.data : []);
-
-        console.log('Processed data:', {
-          users: usersResponse.data,
-          departments: departmentsResponse.data,
-          positions: positionsResponse.data
-        });
       } catch (error) {
-        console.error('Error loading initial data:', error);
         setError('데이터를 불러오는데 실패했습니다.');
       }
     };
-
     loadInitialData();
   }, []);
+
+  // 사용자 목록 및 페이징 데이터 로드
+  useEffect(() => {
+    if (!companyCode) return;
+    const fetchPagedUsers = async () => {
+      try {
+        const res = await getMembers(companyCode, currentPage - 1, itemsPerPage);
+        setUsers(Array.isArray(res.data?.content) ? res.data.content : []);
+        setTotalElements(Number.isNaN(Number(res.data?.page?.totalElements)) ? 0 : Number(res.data?.page?.totalElements));
+      } catch (e) {
+        setUsers([]);
+        setTotalElements(0);
+      }
+    };
+    fetchPagedUsers();
+  }, [companyCode, currentPage, itemsPerPage]);
+
+  // 필터/검색 변경 시 페이지 0으로 리셋
+  useEffect(() => { setCurrentPage(1); }, [userDepartmentFilter, userPositionFilter, userSearch]);
 
   // 사용자 추가/수정 모달 열기
   const openUserModal = (user?: Member) => {
@@ -570,6 +575,14 @@ const UserManagementPage: React.FC = () => {
                 </table>
               </div>
             </div>
+            {/* Pagination UI */}
+            <VehiclePagination
+              currentPage={currentPage}
+              totalPages={Math.max(1, Math.ceil(totalElements / itemsPerPage))}
+              setCurrentPage={setCurrentPage}
+              itemsPerPage={itemsPerPage}
+              setItemsPerPage={setItemsPerPage}
+            />
           </>
         )}
 
