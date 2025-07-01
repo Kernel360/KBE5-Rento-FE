@@ -155,7 +155,7 @@ const KakaoMap: React.FC<KakaoMapProps> = ({ vehiclePaths, vehicleMarkers, path,
     }
   }, [mergedVehiclePaths, mergedVehicleMarkers]);
 
-  return <div ref={mapContainer} style={{ width: '100%', height: '1000px', borderRadius: '10px' }} />;
+  return <div ref={mapContainer} className="w-full rounded-[10px] h-[300px] md:h-[400px] lg:h-[600px]" />;
 };
 
 export default KakaoMap;

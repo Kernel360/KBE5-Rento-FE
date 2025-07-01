@@ -5,6 +5,7 @@ import Sidebar from "../Sidebar";
 import DriveList from "../drive/DriveList";
 import DriveRegisterModal from "../drive/DriveRegisterModal";
 import axiosInstance from '../../utils/axios';
+import VehiclePagination from '../vehicle/VehiclePagination';
 
 // DriveListPage 내부에서 사용할 간소화된 Drive 인터페이스 정의
 interface Drive {
@@ -29,6 +30,8 @@ const DriveListPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [totalElements, setTotalElements] = useState(0);
   const [statusTab, setStatusTab] = useState<'COMPLETED' | 'DRIVING' | 'READY'>('COMPLETED');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   useEffect(() => {
     const fetchDrives = async () => {
@@ -75,6 +78,8 @@ const DriveListPage: React.FC = () => {
     return true;
   });
 
+  const paginatedDrives = filteredDrivesByStatus.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   const filteredDrives = drives
     .filter((d) =>
       d.memberName.includes(search) || d.vehicleNumber.includes(search)
@@ -97,6 +102,7 @@ const DriveListPage: React.FC = () => {
 
   const handleRegisterSuccess = () => {
     setRegisterOpen(false);
+    setStatusTab('READY');
     const fetchDrives = async () => {
       try {
         const res = await axiosInstance.get("/api/drives");
@@ -188,26 +194,17 @@ const DriveListPage: React.FC = () => {
               </div>
             </div>
 
-            <DriveList drives={filteredDrivesByStatus} />
+            <DriveList drives={paginatedDrives} />
 
-            <div className="mt-8 flex justify-center">
-              <nav className="flex items-center">
-                <button className="px-3 py-1 rounded-md mr-1 text-gray-500 hover:bg-gray-100 !rounded-button whitespace-nowrap cursor-pointer">
-                  <i className="fas fa-chevron-left"></i>
-                </button>
-                <button className="px-3 py-1 rounded-md mx-1 bg-green-500 text-white !rounded-button whitespace-nowrap cursor-pointer">
-                  1
-                </button>
-                <button className="px-3 py-1 rounded-md mx-1 text-gray-700 hover:bg-gray-100 !rounded-button whitespace-nowrap cursor-pointer">
-                  2
-                </button>
-                <button className="px-3 py-1 rounded-md mx-1 text-gray-700 hover:bg-gray-100 !rounded-button whitespace-nowrap cursor-pointer">
-                  3
-                </button>
-                <button className="px-3 py-1 rounded-md ml-1 text-gray-500 hover:bg-gray-100 !rounded-button whitespace-nowrap cursor-pointer">
-                  <i className="fas fa-chevron-right"></i>
-                </button>
-              </nav>
+            <div className="mt-4">
+              <VehiclePagination
+                currentPage={currentPage}
+                totalPages={Math.max(1, Math.ceil(filteredDrivesByStatus.length / itemsPerPage))}
+                setCurrentPage={setCurrentPage}
+                itemsPerPage={itemsPerPage}
+                setItemsPerPage={setItemsPerPage}
+                totalElements={filteredDrivesByStatus.length}
+              />
             </div>
           </div>
         </div>
