@@ -179,10 +179,17 @@ const DashboardPage: React.FC = () => {
           ...prev,
           activeReservations: activeReservations.length,
         }));
+        // 현재 운행중인 차량(운행중 status)
+        const drivingCount = activeReservations.filter((d: any) => d.status === 'DRIVING').length;
+        setStats(prev => ({
+          ...prev,
+          operationLogs: drivingCount,
+        }));
       } catch {
         setStats(prev => ({
           ...prev,
           activeReservations: 0,
+          operationLogs: 0,
         }));
       }
     };
